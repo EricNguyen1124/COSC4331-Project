@@ -33,11 +33,11 @@ public:
             }
         }
 
-        for(int i = 0; i < idsToDelete.size(); i++)
+        for (int i = 0; i < idsToDelete.size(); i++)
         {
-            for(int j = 0; j < pendingTaskPool.size(); j++)
+            for (int j = 0; j < pendingTaskPool.size(); j++)
             {
-                if(pendingTaskPool[j]->id == idsToDelete[i])
+                if (pendingTaskPool[j]->id == idsToDelete[i])
                 {
                     pendingTaskPool.erase(pendingTaskPool.begin() + j);
                 }
@@ -56,27 +56,29 @@ public:
                 readyTaskPool.erase(position);
             }
         }
-        
+
         //if all tasks are done and gone, early return
-        
-        if(readyTaskPool.empty())
+
+        if (readyTaskPool.empty())
         {
-            if(pendingTaskPool.empty())
+            if (pendingTaskPool.empty())
             {
-                cout<<"DONE";
+                cout << "DONE";
                 return true;
             }
-            cout<<"no tasks"<<endl;
+            cout << "no tasks" << endl;
         }
-
-        activeTask = readyTaskPool[0];
-        //this is FIFO for now, this is where i need to decide the next activeTask
-        for (int i = 0; i < readyTaskPool.size(); i++)
+        else
         {
-        cout << readyTaskPool[i]->id << ": " << readyTaskPool[i]->executionTime << endl;
+            activeTask = readyTaskPool[0];
+            //this is FIFO for now, this is where i need to decide the next activeTask
+            for (int i = 0; i < readyTaskPool.size(); i++)
+            {
+                cout << readyTaskPool[i]->id << ": " << readyTaskPool[i]->executionTime << endl;
+            }
+            cout << endl;
+            return false;
         }
-        cout << endl;
-        return false;
     }
     //constructor here, initialize activeTask using a scheduler (can a scheduler be a callback function for Processor?)
 };
