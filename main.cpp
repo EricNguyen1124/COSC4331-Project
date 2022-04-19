@@ -3,8 +3,6 @@
 #include <algorithm>
 using namespace std;
 
-
-
 class Task {
 public:
     int id;
@@ -22,16 +20,28 @@ public:
     Task* activeTask;
     vector<Task*> pendingTaskPool; //may need to move these pools to multiprocessor
     vector<Task*> readyTaskPool;
-    int simulationStep;
+    int simulationStep = 0;
     bool step() {
-
+        vector<int> idsToDelete;
         //move tasks that need to arrive into readyTaskPool
         for (int i = 0; i < pendingTaskPool.size(); i++)
         {
             if (pendingTaskPool[i]->arrivalTime == simulationStep)
             {
                 readyTaskPool.push_back(pendingTaskPool[i]);
-;           }
+                idsToDelete.push_back(pendingTaskPool[i]->id);
+            }
+        }
+
+        for(int i = 0; i < idsToDelete.size(); i++)
+        {
+            for(int j = 0; j < pendingTaskPool.size(); j++)
+            {
+                if(pendingTaskPool[j]->id == idsToDelete[i])
+                {
+                    pendingTaskPool.erase(pendingTaskPool.begin() + j);
+                }
+            }
         }
 
         activeTask->executionTime = activeTask->executionTime - 1;
@@ -46,23 +56,26 @@ public:
                 readyTaskPool.erase(position);
             }
         }
-
-        if (!readyTaskPool.empty() && !pendingTaskPool.empty())
+        
+        //if all tasks are done and gone, early return
+        
+        if(readyTaskPool.empty())
         {
-            activeTask = readyTaskPool[0];
-            //this is FIFO for now, this is where i need to decide the next activeTask
-
-            for (int i = 0; i < readyTaskPool.size(); i++)
+            if(pendingTaskPool.empty())
             {
-                cout << readyTaskPool[i]->id << ": " << readyTaskPool[i]->executionTime << endl;
+                cout<<"DONE";
+                return true;
             }
-            cout << endl;
-        }
-        else
-        {
-            return true;
+            cout<<"no tasks"<<endl;
         }
 
+        activeTask = readyTaskPool[0];
+        //this is FIFO for now, this is where i need to decide the next activeTask
+        for (int i = 0; i < readyTaskPool.size(); i++)
+        {
+        cout << readyTaskPool[i]->id << ": " << readyTaskPool[i]->executionTime << endl;
+        }
+        cout << endl;
         return false;
     }
     //constructor here, initialize activeTask using a scheduler (can a scheduler be a callback function for Processor?)
@@ -86,14 +99,14 @@ int main()
     task3.id = 666;
 
     Task task4;
-    task3.arrivalTime = 10;
-    task3.executionTime = 8;
-    task3.id = 64;
+    task4.arrivalTime = 10;
+    task4.executionTime = 8;
+    task4.id = 64;
 
     Processor intel;
     intel.pendingTaskPool.push_back(&task1);
-    intel.pendingTaskPool.push_back(&task2);
     intel.pendingTaskPool.push_back(&task3);
+    intel.pendingTaskPool.push_back(&task2);
     intel.pendingTaskPool.push_back(&task4);
     intel.activeTask = &task1;
 
