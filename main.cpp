@@ -9,11 +9,19 @@ public:
     int period;
     int arrivalTime;
     int executionTime;
-    int absoluteDeadline = arrivalTime + period;
-    bool missedDeadline = false;
+    int relativeDeadline;
+    int absoluteDeadline;
+    Task(int _id, int _period, int _arrivalTime, int _executionTime, int _relativeDeadline)
+    {
+        id = _id;
+        period = _period;
+        arrivalTime = _arrivalTime;
+        executionTime = _executionTime;
+        relativeDeadline = _relativeDeadline;
+        absoluteDeadline = arrivalTime + relativeDeadline;
+    }
     //constructor needs to initialzie deadline to arrivaltime+period. might need a isPeriodic boolean for Task
 };
-
 
 class Processor {
 public:
@@ -95,8 +103,12 @@ public:
 class SingleThread {
 public:
     Task* activeTask;
-    bool stepThread() {
+    void stepThread() {
         activeTask->executionTime = activeTask->executionTime - 1;
+    }
+    SingleThread()
+    {
+        activeTask = nullptr;
     }
 };
 
@@ -107,6 +119,7 @@ public:
     vector<SingleThread*> threads;
     int simulationStep = 0;
     bool step() {
+        cout<<"STEP "<<simulationStep<<endl;
         vector<int> idsToDelete;
         //move tasks that need to arrive into readyTaskPool
         for (int i = 0; i < pendingTaskPool.size(); i++)
@@ -147,51 +160,112 @@ public:
             threads[i]->activeTask = nullptr;
         }
 
-        for (int i = 0; i < readyTaskPool.size(); i++)
+        simulationStep++;
+
+        for(int i = 0; i < readyTaskPool.size(); i++)
         {
-            for (int j = 0; j < threads.size(); j++)
+            if(readyTaskPool[i]->absoluteDeadline < simulationStep)
             {
-                if (threads[j]->activeTask == nullptr)
-                {
-                    threads[j]->activeTask = readyTaskPool[i];
-                }
+                cout<<"TASK # "<<readyTaskPool[i]->id<<" Failed in the ready pool"<<endl;
+                return true;
             }
         }
 
+        for(int i = 0; i < pendingTaskPool.size(); i++)
+        {
+            if(pendingTaskPool[i]->absoluteDeadline < simulationStep)
+            {
+                cout<<"TASK # "<<pendingTaskPool[i]->id<<" Failed in the ready pool"<<endl;
+                return true;
+            }
+        }
+
+        if(readyTaskPool.empty())
+        {
+            if(pendingTaskPool.empty())
+            {
+                cout<<"Done"<<endl;
+                return true;
+            }
+            else
+            {
+                cout<<"No Tasks Ready"<<endl;
+                return false;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < readyTaskPool.size(); i++)
+            {
+                SingleThread* inactive = getInactiveThread();
+                if(inactive == nullptr)
+                {
+                    break;
+                }
+
+                inactive->activeTask = readyTaskPool[i];
+            }
+
+            for (int j = 0; j < threads.size(); j++)
+            {
+                if(threads[j]->activeTask != nullptr)
+                {
+                    cout<<"Thread Number: "<<j<<"  "<<"  Task ID: "<< threads[j]->activeTask->id<<"  Remaining: "<< threads[j]->activeTask->executionTime << endl;
+                }
+                else
+                {
+                    cout<<"Thread Number: "<<j<<"  "<<"  Task ID: "<<"  No task!"<<endl;
+                }
+            }
+        }
+        return false;
+    }
+    SingleThread* getInactiveThread()
+    {
+        for(int i = 0; i < threads.size(); i++)
+        {
+            if(threads[i]->activeTask == nullptr)
+            {
+                return threads[i];
+            }
+        }
+        return nullptr;
     }
     //constructor here, initialize activeTask using a scheduler (can a scheduler be a callback function for Processor?)
+    MultiProcessor(int threadCount, vector<Task*> _pending) : threads(), readyTaskPool()
+    {
+        pendingTaskPool = _pending;
+        threads.reserve(threadCount);
+        for(int i = 0; i < threadCount; i++)
+        {
+            threads.push_back(new SingleThread());
+        }
+    }
 };
 
 int main()
 {
-    Task task1;
-    task1.arrivalTime = 0;
-    task1.executionTime = 3;
-    task1.id = 343;
+    Task task1(343, 0, 0, 3, 50);
 
-    Task task2;
-    task2.arrivalTime = 0;
-    task2.executionTime = 5;
-    task2.id = 420;
+    Task task2(420, 0, 0, 5, 50);
 
-    Task task3;
-    task3.arrivalTime = 12;
-    task3.executionTime = 4;
-    task3.id = 666;
+    Task task3(666, 0, 12, 4, 50);
 
-    Task task4;
-    task4.arrivalTime = 10;
-    task4.executionTime = 8;
-    task4.id = 64;
+    Task task4(64, 0, 10, 8, 50);
+
+    vector<Task*> pend;
 
     Processor intel;
-    intel.pendingTaskPool.push_back(&task1);
-    intel.pendingTaskPool.push_back(&task3);
-    intel.pendingTaskPool.push_back(&task2);
-    intel.pendingTaskPool.push_back(&task4);
+    
+    pend.push_back(&task1);
+    pend.push_back(&task3);
+    pend.push_back(&task2);
+    pend.push_back(&task4);
+
+    MultiProcessor amd(5, pend);
     intel.activeTask = &task1;
 
-    while (!intel.step())
+    while (!amd.step())
     {
         cout << "STEP" << endl;
     }
