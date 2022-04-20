@@ -44,18 +44,23 @@ public:
             }
         }
 
-        activeTask->executionTime = activeTask->executionTime - 1;
-        simulationStep++;
-
-        //remove done task from readyTaskPool if execution is finished
-        if (activeTask->executionTime == 0)
+        if (activeTask != nullptr)
         {
-            vector<Task*>::iterator position = find(readyTaskPool.begin(), readyTaskPool.end(), activeTask);
-            if (position != readyTaskPool.end())
+            activeTask->executionTime = activeTask->executionTime - 1;
+            //remove done task from readyTaskPool if execution is finished
+            if (activeTask->executionTime == 0)
             {
-                readyTaskPool.erase(position);
+                vector<Task*>::iterator position = find(readyTaskPool.begin(), readyTaskPool.end(), activeTask);
+                if (position != readyTaskPool.end())
+                {
+                    readyTaskPool.erase(position);
+                }
+                activeTask = nullptr;
             }
         }
+        simulationStep++;
+
+
 
         //if all tasks are done and gone, early return
 
@@ -66,7 +71,11 @@ public:
                 cout << "DONE";
                 return true;
             }
-            cout << "no tasks" << endl;
+            else
+            {
+                cout << "no tasks ready" << endl;
+                return false;
+            }
         }
         else
         {
@@ -79,6 +88,76 @@ public:
             cout << endl;
             return false;
         }
+    }
+    //constructor here, initialize activeTask using a scheduler (can a scheduler be a callback function for Processor?)
+};
+
+class SingleThread {
+public:
+    Task* activeTask;
+    bool stepThread() {
+        activeTask->executionTime = activeTask->executionTime - 1;
+    }
+};
+
+class MultiProcessor {
+public:
+    vector<Task*> pendingTaskPool;
+    vector<Task*> readyTaskPool;
+    vector<SingleThread*> threads;
+    int simulationStep = 0;
+    bool step() {
+        vector<int> idsToDelete;
+        //move tasks that need to arrive into readyTaskPool
+        for (int i = 0; i < pendingTaskPool.size(); i++)
+        {
+            if (pendingTaskPool[i]->arrivalTime == simulationStep)
+            {
+                readyTaskPool.push_back(pendingTaskPool[i]);
+                idsToDelete.push_back(pendingTaskPool[i]->id);
+            }
+        }
+
+        //delete ready tasks from pending
+        for (int i = 0; i < idsToDelete.size(); i++)
+        {
+            for (int j = 0; j < pendingTaskPool.size(); j++)
+            {
+                if (pendingTaskPool[j]->id == idsToDelete[i])
+                {
+                    pendingTaskPool.erase(pendingTaskPool.begin() + j);
+                }
+            }
+        }
+
+        for (int i = 0; i < threads.size(); i++)
+        {
+            if (threads[i]->activeTask != nullptr)
+            {
+                threads[i]->stepThread();
+                if (threads[i]->activeTask->executionTime == 0)
+                {
+                    vector<Task*>::iterator position = find(readyTaskPool.begin(), readyTaskPool.end(), threads[i]->activeTask);
+                    if (position != readyTaskPool.end())
+                    {
+                        readyTaskPool.erase(position);
+                    }
+                }
+            }
+            threads[i]->activeTask = nullptr;
+        }
+
+        for (int i = 0; i < readyTaskPool.size(); i++)
+        {
+            for (int j = 0; j < threads.size(); j++)
+            {
+                if (threads[j]->activeTask == nullptr)
+                {
+                    threads[j]->activeTask = readyTaskPool[i];
+                }
+            }
+        }
+
     }
     //constructor here, initialize activeTask using a scheduler (can a scheduler be a callback function for Processor?)
 };
