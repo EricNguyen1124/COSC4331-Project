@@ -69,7 +69,7 @@ bool MultiProcessor::step()
     {
         if(pendingTaskPool[i]->absoluteDeadline < simulationStep)
         {
-            cout<<"TASK # "<<pendingTaskPool[i]->id<<" Failed in the ready pool"<<endl;
+            cout<<"TASK # "<<pendingTaskPool[i]->id<<" Failed in the pending pool"<<endl;
             return true;
         }
     }
