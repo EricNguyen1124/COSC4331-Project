@@ -4,9 +4,10 @@ using namespace std;
 
 #include "Task.h"
 
-Task::Task(int _id, int _arrivalTime, int _executionTime, int _relativeDeadline)
+Task::Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relativeDeadline)
 {
     id = _id;
+    type = _type;
     period = 0;
     arrivalTime = _arrivalTime;
     executionTime = _executionTime;
@@ -14,9 +15,10 @@ Task::Task(int _id, int _arrivalTime, int _executionTime, int _relativeDeadline)
     absoluteDeadline = arrivalTime + relativeDeadline;
 }
 
-Task::Task(int _id, int _arrivalTime, int _executionTime, int _relativeDeadline, int _period)
+Task::Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relativeDeadline, int _period)
 {
     id = _id;
+    type = _type;
     period = _period;
     arrivalTime = _arrivalTime;
     executionTime = _executionTime;

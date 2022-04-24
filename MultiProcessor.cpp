@@ -1,4 +1,5 @@
 #include "MultiProcessor.h"
+#include "AntColonyScheduler.h"
 #include <algorithm>
 
 MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : threads(), readyTaskPool()
@@ -7,8 +8,14 @@ MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : thread
     threads.reserve(threadCount);
     for(int i = 0; i < threadCount; i++)
     {
-        threads.push_back(new SingleThread());
+        threads.push_back(new SingleThread(i));
     }
+
+    AntColonyScheduler antsAnts;
+    antsAnts.threads = threads;
+    antsAnts.tasks = pendingTaskPool;
+    antsAnts.initialize();
+    cout<<"debuad";
 }
 
 bool MultiProcessor::step()
@@ -42,7 +49,7 @@ bool MultiProcessor::step()
         if (threads[i]->activeTask != nullptr)
         {
             threads[i]->stepThread();
-            if (threads[i]->activeTask->executionTime == 0)
+            if (threads[i]->activeTask->executionTime <= 0)
             {
                 vector<Task*>::iterator position = find(readyTaskPool.begin(), readyTaskPool.end(), threads[i]->activeTask);
                 if (position != readyTaskPool.end())

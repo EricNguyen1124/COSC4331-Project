@@ -5,9 +5,11 @@
 
 class SingleThread {
 public:
+    int type;
     Task* activeTask;
+    int cycleSpeedForTask(Task task);
     void stepThread();
-    SingleThread();
+    SingleThread(int _type);
 };
 
 #endif
