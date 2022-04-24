@@ -51,7 +51,7 @@ int main()
     pen.push_back(&pTask1);
     pen.push_back(&pTask2);
     pen.push_back(&pTask3);
-    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 100);
+    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 25);
 
     sort(resultVec.begin(), resultVec.end(), compareArrivalTime);
     MultiProcessor amd(4, resultVec);

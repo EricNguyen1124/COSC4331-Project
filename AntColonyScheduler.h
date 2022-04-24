@@ -36,11 +36,43 @@ public:
     }
 };
 
+class Ant{
+public:
+    vector<int> tour;
+    double getCumulativeUtilizationOfTour(map<Task*, vector<ProcessorUtilization>> utilizationGraph, int threadNumber)
+    {
+        double cumulativeUtil;
+        map<Task*,vector<ProcessorUtilization>>::iterator iter = utilizationGraph.begin();
+
+        for (int i = 0; i < tour.size(); i++)
+        {
+            if(tour[i] == threadNumber)
+            {
+                cumulativeUtil = cumulativeUtil + (*iter).second[threadNumber].utilization;
+            }
+            ++iter;
+        }
+        
+        return cumulativeUtil;
+    }
+
+    double getCumulativeUtilization(map<Task*, vector<ProcessorUtilization>> utilizationGraph, int threadNumber)
+    {
+        double cumulativeUtil;
+        for( map<Task*,vector<ProcessorUtilization>>::iterator iter=utilizationGraph.begin(); iter!=utilizationGraph.end(); ++iter)  
+        {  
+            cumulativeUtil = cumulativeUtil + (*iter).second[threadNumber].utilization;
+        }
+        return cumulativeUtil;
+    }
+};
+
 class AntColonyScheduler {
 public:
     vector<Task*> tasks;
     vector<SingleThread*> threads;
     map<Task*, vector<ProcessorUtilization>> utilizationGraph;
+    vector<Ant*> ants;
     void initialize()
     {
         for(int i = 0; i < tasks.size(); i++)
@@ -52,7 +84,22 @@ public:
             }
             utilizationGraph.insert(pair<Task*, vector<ProcessorUtilization>>(tasks[i], fuck));
         }
+
+        for (int i = 0; i < 50; i++)
+        {
+            ants.push_back(new Ant());
+        }
+        
     }
+    void runSimulation()
+    {
+        for (int i = 0; i < ants.size(); i++)
+        {
+            //do stuff here
+        }
+        
+    }
+
 };
 
 #endif
