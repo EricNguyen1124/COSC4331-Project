@@ -38,6 +38,8 @@ int main()
     Task pTask1(1000, 0, 0, 2, 0, 4);
     Task pTask2(2000, 1, 3, 5, 0, 10);
     Task pTask3(3000, 2, 5, 10, 0, 12);
+    Task pTask4(4000, 3, 0, 3, 0, 5);
+    Task pTask5(5000, 4, 0, 5, 0, 7);
 
     vector<Task*> pend;
 
@@ -51,7 +53,8 @@ int main()
     pen.push_back(&pTask1);
     pen.push_back(&pTask2);
     pen.push_back(&pTask3);
-    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 25);
+
+    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 20);
 
     sort(resultVec.begin(), resultVec.end(), compareArrivalTime);
     MultiProcessor amd(4, resultVec);

@@ -10,14 +10,21 @@ MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : thread
     {
         threads.push_back(new SingleThread(i));
     }
-    Ant Jimmy;
-    AntColonyScheduler antsAnts;
-    antsAnts.threads = threads;
-    antsAnts.tasks = pendingTaskPool;
-    antsAnts.initialize();
-
-    double res = Jimmy.getCumulativeUtilization(antsAnts.utilizationGraph, 2);
-    cout<<"debuad";
+    // AntColonyScheduler antsAnts;
+    // antsAnts.threads = threads;
+    // antsAnts.tasks = pendingTaskPool;
+    // antsAnts.initialize();
+    // for (int i = 0; i < 1001; i++)
+    // {
+    //     antsAnts.createSolutions();
+    //     antsAnts.iteration = antsAnts.iteration + 1;
+    //     if(antsAnts.bestTourSoFar.size() == antsAnts.tasks.size() && antsAnts.bestTourSoFarLifeSpan > 20)
+    //     {
+    //         break;
+    //     }
+    // }
+    // cout<<"debug"<<endl;
+    // cout<<"finished"<<endl;
 }
 
 bool MultiProcessor::step()
