@@ -13,6 +13,7 @@ Task::Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relati
     executionTime = _executionTime;
     relativeDeadline = _relativeDeadline;
     absoluteDeadline = arrivalTime + relativeDeadline;
+    lifeSpan = 0;
 }
 
 Task::Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relativeDeadline, int _period)
@@ -24,4 +25,5 @@ Task::Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relati
     executionTime = _executionTime;
     relativeDeadline = period;
     absoluteDeadline = arrivalTime + period;
+    lifeSpan = 0;
 }

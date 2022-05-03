@@ -7,7 +7,7 @@ SingleThread::SingleThread(int _type){
 }
 
 int SingleThread::cycleSpeedForTask(Task task){
-    int result = 3 - abs(task.type - type);
+    int result = 4 - abs(task.type - type);
     if(result < 1)
     {
         return 1;
@@ -20,4 +20,5 @@ int SingleThread::cycleSpeedForTask(Task task){
 
 void SingleThread::stepThread(){
     activeTask->executionTime = activeTask->executionTime - cycleSpeedForTask(*activeTask);
+    activeTask->lifeSpan = activeTask->lifeSpan + 1;
 }

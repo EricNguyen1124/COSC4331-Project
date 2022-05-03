@@ -10,6 +10,7 @@ public:
     int executionTime;
     int relativeDeadline;
     int absoluteDeadline;
+    int lifeSpan;
     Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relativeDeadline);
     Task(int _id, int _type, int _arrivalTime, int _executionTime, int _relativeDeadline, int _period);
 };

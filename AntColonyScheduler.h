@@ -8,6 +8,7 @@
 #include <random>
 #include <math.h>
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 class ProcessorUtilization {
@@ -130,7 +131,7 @@ public:
         {
             for (int j = 0; j < results.size(); j++)
             {
-                if(utilizationGraph[results[j].task].at(i).utilization + utilizationsForAllThreads[i] >= 1)
+                if(utilizationGraph[results[j].task].at(i).utilization + utilizationsForAllThreads[i] >= (double)1.0)
                 {
                     visitsToDelete.push_back(results.at(j));
                 }
@@ -171,6 +172,7 @@ public:
     int bestTourSoFarLifeSpan = 0;
     int iteration = 1;
     double minConstant = 20.0;
+    double heuristicFactor = 4.0;
     void initialize()
     {
         double pheromoneMax = (double)tasks.size()/(pheromoneDecayRate);
@@ -188,7 +190,7 @@ public:
             utilizationGraph.insert(pair<Task*, vector<ProcessorUtilization>>(tasks[i], utilizations));
         }
 
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 80; i++)
         {
             ants.push_back(new Ant());
         }
@@ -226,7 +228,7 @@ public:
                 double weightsTotal = 0;
                 for (int j = 0; j < viableNeighbors.size(); j++)
                 {
-                    double weight = pheromoneTrails[viableNeighbors[j]];
+                    double weight = pheromoneTrails[viableNeighbors[j]] + pow(calculateHeuristic(viableNeighbors[j]),heuristicFactor);  //add heuristic in here
                     weights.push_back(weight);
                     weightsTotal = weightsTotal + weight;
                 }
@@ -322,6 +324,47 @@ public:
         resetAnts();
     }
 
+    inline bool comparePair(pair<int,int> p1, pair<int,int> p2)
+    {
+        return (p1.second < p2.second);
+    }
+
+    double calculateHeuristic(Visit visit)
+    {
+        double cumulativeUtil;
+        double tentativeUtil;
+        for( map<Task*,vector<ProcessorUtilization>>::iterator iter=utilizationGraph.begin(); iter!=utilizationGraph.end(); ++iter)  
+        {  
+            for (int i = 0; i < (*iter).second.size(); i++)
+            {
+                cumulativeUtil = cumulativeUtil + (*iter).second[i].utilization;
+                if((*iter).first == visit.task && (*iter).second[i].thread == visit.processor)
+                {
+                    tentativeUtil = (*iter).second[i].utilization;
+                }
+            }
+        }
+        int rank = 1;
+        vector<pair<int, int>> typeToSpeed;
+        for (int i = 0; i < threads.size(); i++)
+        {
+            typeToSpeed.push_back(pair<int,int>(threads[i]->type, threads[i]->cycleSpeedForTask(*visit.task)));
+        }
+        sort(typeToSpeed.begin(), typeToSpeed.end(), [](const pair<int,int>& lhs, const pair<int,int>& rhs){return lhs.second > rhs.second;});
+
+        for (int j = 0; j < typeToSpeed.size(); j++)
+        {
+            if(typeToSpeed[j].first == visit.processor->type)
+            {
+                rank = j + 1;
+                break;
+            }
+        }
+        
+        double result = (threads.size() * (1.0 + cumulativeUtil + tentativeUtil))/(double)rank;
+        return result;
+    }
+    
     bool inBestTour(Visit visit, vector<Visit> bestTour)
     {
         for (int i = 0; i < bestTour.size(); i++)

@@ -37,7 +37,7 @@ int main()
 
     Task pTask1(1000, 0, 0, 2, 0, 4);
     Task pTask2(2000, 1, 3, 5, 0, 10);
-    Task pTask3(3000, 2, 5, 10, 0, 12);
+    Task pTask3(3000, 2, 5, 7, 0, 12);
     Task pTask4(4000, 3, 0, 3, 0, 5);
     Task pTask5(5000, 4, 0, 5, 0, 7);
 
@@ -53,16 +53,19 @@ int main()
     pen.push_back(&pTask1);
     pen.push_back(&pTask2);
     pen.push_back(&pTask3);
+    pen.push_back(&pTask4);
+    pen.push_back(&pTask5);
 
-    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 20);
+    vector<Task*> resultVec = generatePeriodicTaskSet(pen, 24);
 
     sort(resultVec.begin(), resultVec.end(), compareArrivalTime);
-    MultiProcessor amd(4, resultVec);
+    MultiProcessor amd(3, resultVec);
+    amd.periodicTasks = pen;
 
     while (!amd.step())
     {
         cout<<endl;
     }
-
+    cout<<(double)amd.totalExecutionTime/resultVec.size();
     return 0;
 }

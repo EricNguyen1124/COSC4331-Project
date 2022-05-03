@@ -2,7 +2,7 @@
 #include "AntColonyScheduler.h"
 #include <algorithm>
 
-MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : threads(), readyTaskPool()
+MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : threads(), readyTaskPool(), periodicTasks()
 {
     pendingTaskPool = _pending;
     threads.reserve(threadCount);
@@ -10,21 +10,22 @@ MultiProcessor::MultiProcessor(int threadCount, vector<Task*> _pending) : thread
     {
         threads.push_back(new SingleThread(i));
     }
-    // AntColonyScheduler antsAnts;
-    // antsAnts.threads = threads;
-    // antsAnts.tasks = pendingTaskPool;
-    // antsAnts.initialize();
-    // for (int i = 0; i < 1001; i++)
-    // {
-    //     antsAnts.createSolutions();
-    //     antsAnts.iteration = antsAnts.iteration + 1;
-    //     if(antsAnts.bestTourSoFar.size() == antsAnts.tasks.size() && antsAnts.bestTourSoFarLifeSpan > 20)
-    //     {
-    //         break;
-    //     }
-    // }
-    // cout<<"debug"<<endl;
-    // cout<<"finished"<<endl;
+    totalExecutionTime = 0;
+    AntColonyScheduler antsAnts;
+    antsAnts.threads = threads;
+    antsAnts.tasks = periodicTasks;
+    antsAnts.initialize();
+    for (int i = 0; i < 1001; i++)
+    {
+        antsAnts.createSolutions();
+        antsAnts.iteration = antsAnts.iteration + 1;
+        if(antsAnts.bestTourSoFar.size() == antsAnts.tasks.size() && antsAnts.bestTourSoFarLifeSpan > 20)
+        {
+            break;
+        }
+    }
+    cout<<"debug"<<endl;
+    cout<<"finished"<<endl;
 }
 
 bool MultiProcessor::step()
@@ -60,6 +61,7 @@ bool MultiProcessor::step()
             threads[i]->stepThread();
             if (threads[i]->activeTask->executionTime <= 0)
             {
+                totalExecutionTime = threads[i]->activeTask->lifeSpan + totalExecutionTime;
                 vector<Task*>::iterator position = find(readyTaskPool.begin(), readyTaskPool.end(), threads[i]->activeTask);
                 if (position != readyTaskPool.end())
                 {
@@ -105,6 +107,7 @@ bool MultiProcessor::step()
     }
     else
     {
+        //EDF
         for (int i = 0; i < readyTaskPool.size(); i++)
         {
             SingleThread* inactive = getInactiveThread();
@@ -116,6 +119,28 @@ bool MultiProcessor::step()
             inactive->activeTask = readyTaskPool[i];
         }
 
+        //ACO
+
+        vector<pair<SingleThread*, vector<pair<Task*, int>>>> fuc;
+
+
+        for (int i = 0; i < threads.size(); i++)
+        {
+            vector<pair<Task*, int>> taskToCycleSpeed;
+            for (int j = 0; j < readyTaskPool.size(); j++)
+            {
+                taskToCycleSpeed.push_back(pair<Task*, int>(readyTaskPool[j], threads[i]->cycleSpeedForTask(*readyTaskPool[j])));
+            }
+            fuc.push_back(pair<SingleThread*, vector<pair<Task*, int>>>(threads[i], taskToCycleSpeed));
+        }
+        //sort(fuc.begin(), fuc.end(), [](const pair<SingleThread*, pair<Task*, int>>& lhs, const pair<SingleThread*, pair<Task*, int>>& rhs){return lhs.second.second > rhs.second.second;});
+
+        for (int i = 0; i < fuc.size(); i++)
+        {
+            sort(fuc[i].second.begin(), fuc[i].second.end(), [](const pair<Task*,int> & lhs, const pair<Task*,int>& rhs){return lhs.second > rhs.second;});
+        }
+        
+        
         for (int j = 0; j < threads.size(); j++)
         {
             if(threads[j]->activeTask != nullptr)
@@ -141,4 +166,29 @@ SingleThread* MultiProcessor::getInactiveThread()
         }
     }
     return nullptr;
+}
+
+bool MultiProcessor::taskAlreadyAssigned(Task* task)
+{
+    for (int i = 0; i < threads.size(); i++)
+    {
+        if(threads[i]->activeTask == task)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+vector<pair<SingleThread*, Task*>> MultiProcessor::findBestAssginments(vector<pair<SingleThread*, vector<pair<Task*, int>>>> fuc)
+{
+    vector<pair<SingleThread*, Task*>> result;
+
+    for (int i = 0; i < threads.size(); i++)
+    {
+        
+    }
+    
+    
+    return result;
 }
